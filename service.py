@@ -12,9 +12,9 @@ reader = easyocr.Reader(['de', 'en'], gpu=False)
 print("Modelle geladen! Server ist bereit.")
 
 @app.post("/extract")
-async def extract_text(file: UploadFile = File(...)):
+def extract_text(file: UploadFile = File(...)):
     try:
-        contents = await file.read()
+        contents = file.file.read()
         
         # detail=0: Gibt uns nur den Text zurück, keine Box-Koordinaten
         # paragraph=True: Gruppiert zusammenhängende Zeilen intelligent zu Absätzen!
