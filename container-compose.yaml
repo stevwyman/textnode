@@ -3,5 +3,11 @@ services:
     build: localhost/ocr_service:latest
     container_name: ocr_service
     ports:
-      - "8002:8000"
+      - "8002:8001"
     restart: unless-stopped
+    volumes:
+      - easyocr_models:/root/.EasyOCR/model
+
+volumes:
+  weights:
+    easyocr_models

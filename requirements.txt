@@ -1,5 +1,9 @@
+# 🔥 WICHTIG: Die erste Zeile zwingt Pip, die schlanken CPU-Versionen zu laden!
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+torchaudio
+easyocr
 fastapi
 uvicorn[standard]
-transformers
-torch
-pillow
+python-multipart
