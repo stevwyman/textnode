@@ -2,29 +2,41 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 import easyocr
 import logging
+import io
+from PIL import Image # 🔥 Neu importieren
 
-# Logging aktivieren, damit wir sehen, wo er abstürzt
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="EasyOCR-Service")
 
 logger.info("Lade EasyOCR Modelle (CPU)...")
-# gpu=False zwingt ihn in den CPU-Modus, was RAM-Spitzen reduziert
 reader = easyocr.Reader(['de', 'en'], gpu=False)
 logger.info("Modelle geladen! Server ist bereit.")
 
-# 🔥 WICHTIG: Normales 'def' (kein 'async def')
 @app.post("/extract")
 def extract_text(file: UploadFile = File(...)):
     logger.info(f"Empfange Datei: {file.filename}")
     
     try:
-        # 🔥 WICHTIG: 'file.file.read()' (ohne await!)
         contents = file.file.read()
-        logger.info(f"Datei gelesen ({len(contents)} Bytes). Starte OCR-Analyse...")
+        logger.info(f"Datei gelesen ({len(contents)} Bytes).")
         
-        # OCR Analyse
+        # 🔥 NEU: Bildgröße für den RAM optimieren
+        image = Image.open(io.BytesIO(contents))
+        
+        # Wenn das Bild breiter oder höher als 1600 Pixel ist, skalieren wir es proportional herunter
+        max_size = 1600
+        if image.width > max_size or image.height > max_size:
+            image.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+            logger.info(f"Bild auf {image.width}x{image.height} verkleinert, um RAM zu sparen.")
+            
+            # Verkleinertes Bild zurück in Bytes wandeln
+            img_byte_arr = io.BytesIO()
+            image.save(img_byte_arr, format=image.format or 'JPEG')
+            contents = img_byte_arr.getvalue()
+
+        logger.info("Starte OCR-Analyse...")
         results = reader.readtext(contents, detail=0, paragraph=True)
         logger.info("OCR-Analyse erfolgreich beendet!")
         

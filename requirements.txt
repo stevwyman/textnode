@@ -6,4 +6,5 @@ torchaudio
 easyocr
 fastapi
 uvicorn[standard]
+pillow
 python-multipart
